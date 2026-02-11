@@ -1,0 +1,7 @@
+model:
+  backbone: resnet32
+  head: mlp
+  feat_dim: 128
+dataset:
+  name: cifar10
+seed: 0
