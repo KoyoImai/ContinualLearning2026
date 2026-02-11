@@ -1,0 +1,51 @@
+model:
+  backbone: resnet18
+  head: mlp
+  feat_dim: 128
+  syncbn: true
+criterion:
+  name: asym_supcon
+  temp: 0.5
+  distill:
+    type: None
+    cur_temp: 0.2
+    past_temp: 0.01
+    power: 1.0
+optimizer:
+  name: sgd
+  learning_rate: 0.5
+  learning_rate_prototypes: 0.01
+  momentum: 0.9
+  weight_decay: 0.0001
+  scheduler:
+    cosine: true
+    lr_decay_rate: 0.1
+    warm: true
+    warm_epochs: 10
+    warmup_from_enc: 0.01
+    warmup_to_enc: null
+    warmup_from_prot: 0.001
+    warmup_to_prot: null
+train:
+  epochs: 10
+  start_epochs: 50
+  batch_size: 512
+continual:
+  n_cls: 10
+  n_task: 5
+  cls_per_task: 2
+  target_task: null
+buffer:
+  type: random
+  size: 500
+dataset:
+  name: cifar10
+  size: 32
+  folder: /home/kouyou/datasets/
+log:
+  explog_path: debug
+  mem_path: debug
+  model_path: debug
+seed: 0
+print_freq: 1
+num_workers: 8

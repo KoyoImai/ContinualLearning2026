@@ -7,7 +7,7 @@ def setup_trainer(cfg, model, model2, criterion, optimizer):
 
     if cfg.criterion.name == "ce":
         assert False
-    elif cfg.criterion.name == "supcon":
+    elif cfg.criterion.name in ["supcon", "asym_supcon"]:
         trainer = SupConTrainer(cfg, model, model2, criterion, optimizer)
     else:
         assert False

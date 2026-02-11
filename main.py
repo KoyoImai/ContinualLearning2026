@@ -96,7 +96,7 @@ def main(cfg):
         logging.info('Start Training current task {}'.format(cfg.continual.target_task))
 
         # model2 のパラメータを model のパラメータでコピー
-        model2 = copy.deepcopy(model)
+        trainer.model2 = copy.deepcopy(trainer.model)
 
         #=======================
         # リプレイサンプルの選択

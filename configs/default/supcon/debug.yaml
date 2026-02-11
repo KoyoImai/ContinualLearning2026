@@ -7,8 +7,13 @@ model:
   syncbn: True
 
 criterion:
-  name: "supcon"
+  name: "asym_supcon"
   temp: 0.5
+  distill:
+    type: None
+    cur_temp: 0.2
+    past_temp: 0.01
+    power: 1.0
 
 optimizer:
   name: "sgd"
@@ -28,7 +33,7 @@ optimizer:
 
 train:
   epochs: 100
-  start_epochs: 500
+  start_epochs: 50
   batch_size: 512
 
 continual:
