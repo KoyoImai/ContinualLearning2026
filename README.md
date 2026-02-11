@@ -16,3 +16,13 @@ SSOCL/
 ├── trainers
 └── utils.py          : その他のモジュールを実装するutilsファイル．
 ```
+
+# 実行方法
+## 学習
+指定したデータセットで学習を行います．
+学習の設定は`configs`ディレクトリの下に`.yaml`ファイルを追加，修正することで変更できます．
+`.yaml`ファイルを追加して学習する場合は，実行時の`--config-path`と`--config-name`を修正してから実行してください．
+- debug:
+    ```
+    python main.py --config-path ./configs/default/supcon --config-name debug
+    ```
