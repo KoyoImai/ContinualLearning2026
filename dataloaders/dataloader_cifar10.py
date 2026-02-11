@@ -115,7 +115,7 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
     # データ拡張の定義
     train_transform = transforms.Compose([
         transforms.Resize(size=(size, size)),
-        transforms.RandomResizedCrop(size=size, scale=(0.1, 1.)),
+        transforms.RandomResizedCrop(size=size, scale=(0.1 if cfg.dataset.name=='tiny-imagenet' else 0.2, 1.)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomApply([
             transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
@@ -184,13 +184,13 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
 
     if training:
         train_loader = torch.utils.data.DataLoader(
-                            train_dataset, batch_size=batch_size, shuffle=(train_sampler is None),
+                            train_dataset, batch_size=batch_size, shuffle=(train_sampler is None), drop_last=True,
                             num_workers=num_workers, pin_memory=True, sampler=train_sampler)
 
 
     else:
         train_loader = torch.utils.data.DataLoader(
-                            train_dataset, batch_size=batch_size, shuffle=False,
+                            train_dataset, batch_size=batch_size, shuffle=False, drop_last=True,
                             num_workers=num_workers, pin_memory=True)
         print('no separate sampler')
 

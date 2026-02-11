@@ -176,8 +176,8 @@ class SupConResNet(nn.Module):
 
         # 必要なら Prototypes を作成
         self.prototypes = None
-        if cfg is not None:
-            self.prototypes = nn.Linear(feat_dim, cfg.continual.n_cls, bias=False)
+        # if cfg is not None:
+        #     self.prototypes = nn.Linear(feat_dim, cfg.continual.n_cls, bias=False)
 
 
     def reinit_head(self):

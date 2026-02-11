@@ -1,11 +1,54 @@
 
 
+import math
+import numpy as np
 
 import torch
 
 
-from utils import AverageMeter, adjust_learning_rate, warmup_learning_rate
+# from utils import AverageMeter, adjust_learning_rate, warmup_learning_rate
+from utils import AverageMeter
 from trainers.base import BaseLearner
+
+
+def adjust_learning_rate(cfg, optimizer, epoch):
+
+    lr_enc = cfg.optimizer.learning_rate
+    cosine = cfg.optimizer.scheduler.cosine
+    lr_decay_rate = cfg.optimizer.scheduler.lr_decay_rate
+    
+    if cosine:
+        eta_min_enc = lr_enc * (lr_decay_rate ** 3)
+        lr_enc = eta_min_enc + (lr_enc - eta_min_enc) * (
+                1 + math.cos(math.pi * epoch / cfg.train.epochs)) / 2
+    else:
+        steps = np.sum(epoch > np.asarray(cfg.optimizer.scheduler.lr_decay_epochs))
+        if steps > 0:
+            lr_enc = lr_enc * (lr_decay_rate ** steps)
+
+    lr_list = [lr_enc]
+
+    for idx, param_group in enumerate(optimizer.param_groups):
+        # print('idx: ', idx)
+        param_group['lr'] = lr_list[idx]
+
+
+def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
+    
+    warm = cfg.optimizer.scheduler.warm
+    warm_epochs = cfg.optimizer.scheduler.warm_epochs
+    warmup_from_enc = cfg.optimizer.scheduler.warmup_from_enc
+    warmup_to_enc = cfg.optimizer.scheduler.warmup_to_enc
+
+    if warm and epoch <= warm_epochs:
+        p = (batch_id + (epoch - 1) * total_batches) / \
+            (warm_epochs * total_batches)
+        lr_enc = warmup_from_enc + p * (warmup_to_enc - warmup_from_enc)
+        lr_list = [lr_enc]
+
+        for idx, param_group in enumerate(optimizer.param_groups):
+            param_group['lr'] = lr_list[idx]
+
 
 
 class SupConTrainer(BaseLearner):
@@ -40,7 +83,8 @@ class SupConTrainer(BaseLearner):
             bsz = labels.shape[0]
 
             # warm_up
-            warmup_learning_rate(self.cfg, epoch, idx, len(train_loader), self.optimizer)
+            if self.cfg.continual.target_task > 0:
+                warmup_learning_rate(self.cfg, epoch, idx, len(train_loader), self.optimizer)
 
             # ラベルあり2viewの画像を結合
             images = torch.cat([images[0], images[1]], dim=0)
@@ -68,7 +112,7 @@ class SupConTrainer(BaseLearner):
 
             # 損失計算
             loss = self.criterion(features, labels, target_labels=list(range(self.cfg.continual.target_task*self.cfg.continual.cls_per_task, (self.cfg.continual.target_task+1)*self.cfg.continual.cls_per_task)))
-            print("loss: ", loss)
+            # print("loss: ", loss)
 
             # loss += self.cfg.criterion.distill.power * loss_distill
             losses.update(loss.item(), bsz)
@@ -129,3 +173,24 @@ class SupConTrainer(BaseLearner):
 
 
         return loss_distill
+
+
+    def set_scheduler(self):
+
+        if self.cfg.optimizer.scheduler.warm:
+
+            cosine = self.cfg.optimizer.scheduler
+            
+            learning_rate = self.cfg.optimizer.learning_rate
+            lr_decay_rate = self.cfg.optimizer.scheduler.lr_decay_rate
+
+            epochs = self.cfg.train.epochs
+            warm_epochs = self.cfg.optimizer.scheduler.warm_epochs
+
+            if cosine:
+                eta_min_encoder = learning_rate * (lr_decay_rate ** 3)
+                self.cfg.optimizer.scheduler.warmup_to_enc = eta_min_encoder + (learning_rate - eta_min_encoder) * (
+                        1 + math.cos(math.pi * warm_epochs / epochs)) / 2
+            else:
+                self.cfg.optimizer.scheduler.warmup_to_enc = learning_rate
+                

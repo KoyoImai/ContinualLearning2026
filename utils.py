@@ -56,6 +56,7 @@ def adjust_learning_rate(cfg, optimizer, epoch):
 
     lr_enc = learning_rate
     lr_prot = learning_rate_prototypes
+    
     if cosine:
         eta_min_enc = lr_enc * (lr_decay_rate ** 3)
         eta_min_prot = lr_prot * (lr_decay_rate ** 3)
@@ -72,6 +73,7 @@ def adjust_learning_rate(cfg, optimizer, epoch):
     lr_list = [lr_enc, lr_enc, lr_prot]
 
     for idx, param_group in enumerate(optimizer.param_groups):
+        # print('idx: ', idx)
         param_group['lr'] = lr_list[idx]
 
 
@@ -92,6 +94,9 @@ def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
         lr_list = [lr_enc, lr_enc, lr_prot]
 
         for idx, param_group in enumerate(optimizer.param_groups):
+            # print("lr_list[idx]: ", lr_list[idx])
+
+            # print('idx: ', idx)
             param_group['lr'] = lr_list[idx]
 
 #=====================

@@ -59,6 +59,6 @@ log:
   model_path: "debug"
 
 
-seed: 0
-print_freq: 1
+seed: 77
+print_freq: 5
 num_workers: 8
