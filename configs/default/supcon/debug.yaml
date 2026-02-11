@@ -7,10 +7,10 @@ model:
   syncbn: True
 
 criterion:
-  name: "asym_supcon"
+  name: "supcon"
   temp: 0.5
   distill:
-    type: None
+    type: "ird"
     cur_temp: 0.2
     past_temp: 0.01
     power: 1.0
@@ -33,7 +33,7 @@ optimizer:
 
 train:
   epochs: 100
-  start_epochs: 50
+  start_epochs: 500
   batch_size: 512
 
 continual:
@@ -52,13 +52,21 @@ dataset:
   size: 32
   folder: "/home/kouyou/datasets/"
 
+linear:
+  target_task: 4
+  train:
+    batch_size: 128
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0 
 
 log:
-  explog_path: "debug"
-  mem_path: "debug"
-  model_path: "debug"
+  explog_path: "debug/supcon/explog/"
+  mem_path: "debug/supcon/mem/"
+  model_path: "debug/supcon/model/"
 
 
 seed: 77
-print_freq: 5
+print_freq: 10
 num_workers: 8

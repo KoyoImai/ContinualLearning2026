@@ -24,7 +24,7 @@ class BaseLearner(object):
     #         # warmup_from_enc = self.cfg.optimizer.scheduler.warmup_from_enc
     #         # warmup_from_prot = self.cfg.optimizer.scheduler.warmup_from_prot
     #         # warm_epochs = self.cfg.optimizer.scheduler.warm_epochs
-    #         cosine = self.cfg.optimizer.scheduler
+    #         cosine = self.cfg.optimizer.scheduler.cosine
             
     #         learning_rate = self.cfg.optimizer.learning_rate
     #         lr_decay_rate = self.cfg.optimizer.scheduler.lr_decay_rate

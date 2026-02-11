@@ -4,11 +4,15 @@ import math
 import numpy as np
 
 import torch
+import torch.optim as optim
+import torch.nn.functional as F
+import torch.optim.lr_scheduler as lr_scheduler
 
 
 # from utils import AverageMeter, adjust_learning_rate, warmup_learning_rate
 from utils import AverageMeter
 from trainers.base import BaseLearner
+from models.resnet_cifar_co2l import LinearClassifier
 
 
 def adjust_learning_rate(cfg, optimizer, epoch):
@@ -83,8 +87,9 @@ class SupConTrainer(BaseLearner):
             bsz = labels.shape[0]
 
             # warm_up
-            if self.cfg.continual.target_task > 0:
-                warmup_learning_rate(self.cfg, epoch, idx, len(train_loader), self.optimizer)
+            # if self.cfg.continual.target_task > 0:
+            #     warmup_learning_rate(self.cfg, epoch, idx, len(train_loader), self.optimizer)
+            warmup_learning_rate(self.cfg, epoch, idx, len(train_loader), self.optimizer)
 
             # ラベルあり2viewの画像を結合
             images = torch.cat([images[0], images[1]], dim=0)
@@ -103,7 +108,8 @@ class SupConTrainer(BaseLearner):
             features, encoded = self.model(images, return_feat=True)
 
             # 蒸留損失の計算
-            # loss_distill = self.distill(features=features, images=images)
+            loss_distill = self.distill(features=features, images=images)
+            distill.update(loss_distill.item(), bsz)
 
             # 特徴量を2viewに分割
             f1, f2 = torch.split(features, [bsz, bsz], dim=0)
@@ -111,10 +117,11 @@ class SupConTrainer(BaseLearner):
             features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
 
             # 損失計算
-            loss = self.criterion(features, labels, target_labels=list(range(self.cfg.continual.target_task*self.cfg.continual.cls_per_task, (self.cfg.continual.target_task+1)*self.cfg.continual.cls_per_task)))
+            # loss = self.criterion(features, labels, target_labels=list(range(self.cfg.continual.target_task*self.cfg.continual.cls_per_task, (self.cfg.continual.target_task+1)*self.cfg.continual.cls_per_task)))
+            loss = self.criterion(features, labels)
             # print("loss: ", loss)
 
-            # loss += self.cfg.criterion.distill.power * loss_distill
+            loss += self.cfg.criterion.distill.power * loss_distill
             losses.update(loss.item(), bsz)
 
             # 現在の学習率
@@ -130,8 +137,9 @@ class SupConTrainer(BaseLearner):
             if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(self.train_loader):
                 print('Train: [{0}][{1}/{2}]\t'
                     'loss {loss.val:.3f} ({loss.avg:.3f})\t'
+                    'distill {distill.val:.3f} ({distill.avg:.3f})\t'
                     'lr {lr:.5f}'.format(
-                    epoch, idx + 1, len(self.train_loader), loss=losses, lr=current_lr))
+                    epoch, idx + 1, len(self.train_loader), loss=losses, distill=distill, lr=current_lr))
         
     
     def distill(self, features, images):
@@ -179,7 +187,7 @@ class SupConTrainer(BaseLearner):
 
         if self.cfg.optimizer.scheduler.warm:
 
-            cosine = self.cfg.optimizer.scheduler
+            cosine = self.cfg.optimizer.scheduler.cosine
             
             learning_rate = self.cfg.optimizer.learning_rate
             lr_decay_rate = self.cfg.optimizer.scheduler.lr_decay_rate
@@ -194,3 +202,113 @@ class SupConTrainer(BaseLearner):
             else:
                 self.cfg.optimizer.scheduler.warmup_to_enc = learning_rate
                 
+
+    def linear_eval(self, train_loader, val_loader):
+
+        # classifierの準備
+        classifier = LinearClassifier(name="resnet18", num_classes=self.cfg.continual.n_cls, seed=self.cfg.seed)
+        if torch.cuda.is_available():
+            classifier = classifier.cuda()
+        
+        # classifierのOptimizer
+        optimizer = optim.SGD(classifier.parameters(),
+                            lr=self.cfg.linear.train.learning_rate,
+                            momentum=self.cfg.linear.train.momentum,
+                            weight_decay=self.cfg.linear.train.weight_decay)
+
+        # schedulerの設定
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 75, 90], gamma=0.2)
+
+        # 損失関数の作成
+        criterion = torch.nn.CrossEntropyLoss()
+
+        for epoch in range(1, self.cfg.linear.train.epochs):
+
+            # modelをevalモード，classifierをtrainモードに変更
+            self.model.eval()
+            classifier.train()
+            
+            losses = AverageMeter()
+
+            # 1エポック分の学習
+            for idx, (images, labels) in enumerate(train_loader):
+
+                images = images.cuda(non_blocking=True)
+                labels = labels.cuda(non_blocking=True)
+                bsz = labels.shape[0]
+
+                # 特徴量獲得
+                with torch.no_grad():
+                    features = self.model.encoder(images)
+                output = classifier(features.detach())
+                loss = criterion(output, labels)
+
+                # update metric
+                losses.update(loss.item(), bsz)
+                # cnt += bsz
+
+                # 最適化ステップ
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # 現在の学習率
+                current_lr = optimizer.param_groups[0]['lr']
+
+                # 学習記録の表示
+                if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(train_loader):
+                    print('Train: [{0}][{1}/{2}]\t'
+                        'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
+                        epoch, idx + 1, len(train_loader), loss=losses))
+                
+
+            # 検証（これまでの全てのタスクを使用）
+            self.model.eval()
+            classifier.eval()
+
+            losses = AverageMeter()
+
+            corr = [0.] * (self.cfg.linear.target_task + 1) * self.cfg.continual.cls_per_task
+            cnt  = [0.] * (self.cfg.linear.target_task + 1) * self.cfg.continual.cls_per_task
+            correct_task = 0.0
+
+            with torch.no_grad():
+                for idx, (images, labels) in enumerate(val_loader):
+                    images = images.float().cuda()
+                    labels = labels.cuda()
+                    bsz = labels.shape[0]
+
+                    # forward
+                    output = classifier(self.model.encoder(images))
+                    loss = criterion(output, labels)
+
+                    # update metric
+                    losses.update(loss.item(), bsz)
+
+                    #
+                    cls_list = np.unique(labels.cpu())
+                    correct_all = (output.argmax(1) == labels)
+
+                    for tc in cls_list:
+                        mask = labels == tc
+                        correct_task += (output[mask, (tc // self.cfg.continual.cls_per_task) * self.cfg.continual.cls_per_task : ((tc // self.cfg.continual.cls_per_task)+1) * self.cfg.continual.cls_per_task].argmax(1) == (tc % self.cfg.continual.cls_per_task)).float().sum()
+
+                    for c in cls_list:
+                        mask = labels == c
+                        corr[c] += correct_all[mask].float().sum().item()
+                        cnt[c] += mask.float().sum().item()
+                    
+                    if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(val_loader):
+                        print('Test: [{0}/{1}]\t'
+                            'Acc@1 {top1:.3f} {task_il:.3f}\t'
+                            'lr {lr:.5f}'.format(
+                                idx, len(val_loader),top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100., lr=current_lr
+                            ))
+            print(' * Acc@1 {top1:.3f} {task_il:.3f}'.format(top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100.))
+
+            # 学習率の調整
+            scheduler.step()
+
+
+
+

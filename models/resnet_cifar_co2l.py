@@ -248,4 +248,28 @@ class SupCEResNet(nn.Module):
         self.fc = new_fc
         self.out_features = nb_classes
 
-        
+
+# 線形分類による評価用        
+class LinearClassifier(nn.Module):
+    """Linear classifier"""
+    def __init__(self, name='resnet50', num_classes=10, two_layers=False, seed=777):
+        super(LinearClassifier, self).__init__()
+
+        torch.manual_seed(seed)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+
+        _, feat_dim = model_dict[name]
+        if two_layers:
+          self.fc = nn.Sequential(
+            nn.Linear(feat_dim, feat_dim),
+            nn.ReLU(),
+            nn.Linear(feat_dim, num_classes)
+            )
+        else:
+            self.fc = nn.Linear(feat_dim, num_classes)
+
+    def forward(self, features):
+        return self.fc(features)
+    
+
