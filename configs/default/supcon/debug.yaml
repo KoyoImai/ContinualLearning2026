@@ -32,8 +32,8 @@ optimizer:
     warmup_to_prot: 
 
 train:
-  epochs: 100
-  start_epochs: 500
+  epochs: 10
+  start_epochs: 15
   batch_size: 512
 
 continual:
@@ -68,6 +68,7 @@ log:
   mem_path: 
   model_path: 
   subset_path: 
+  tb_path: 
 
 # configファイルの保存先（main.py のlog_baseと同じにしないといけないので注意）
 hydra:

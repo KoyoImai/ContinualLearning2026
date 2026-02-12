@@ -6,7 +6,8 @@ import hydra
 import logging
 import numpy as np
 
-# import tensorboard_logger as tb_logger
+
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -65,6 +66,7 @@ def main(cfg):
     #=======================
     model = make_model(cfg=cfg)
     model2 = make_model(cfg=cfg)
+    model_temp = make_model(cfg=cfg)
 
     #=======================
     # 損失関数の作成
@@ -86,11 +88,15 @@ def main(cfg):
     #=======================
     # TensorBoard 
     #=======================
+    cfg.log.tb_path = f"{cfg.log.base}/tb/"
+    if not os.path.isdir(cfg.log.tb_path):
+        os.makedirs(cfg.log.tb_path)
+    writer = SummaryWriter(log_dir=f"{cfg.log.tb_path}")
 
     #=======================
     # trainerの作成
     #=======================
-    trainer = setup_trainer(cfg, model, model2, criterion, optimizer)
+    trainer = setup_trainer(cfg, model, model2, model_temp, criterion, optimizer, writer)
 
 
     # タスク毎の学習エポック数
@@ -120,7 +126,7 @@ def main(cfg):
         #=======================
         # データローダの作成
         #=======================
-        dataloader, subset_indices = set_loader(cfg, model, replay_indices)
+        dataloader, vanila_loaders, subset_indices = set_loader(cfg, model, replay_indices)
 
         # subset_indices（このタスクで学習に使用する全てのデータのインデックス）を保存
         np.save(os.path.join(cfg.log.subset_path, 'subset_indices_{target_task}.npy'.format(target_task=target_task)), np.array(subset_indices))
@@ -151,11 +157,20 @@ def main(cfg):
             # 学習を実行
             trainer.train(dataloader, epoch)
 
-
         # 保存（opt.model_path）
         file_path = f"{cfg.log.model_path}/model_{cfg.continual.target_task:02d}.pth"
         # save_model(model, method_tools["optimizer"], opt, opt.epochs, file_path)
         save_model(trainer.model, trainer.optimizer, cfg, cfg.train.epochs, file_path)
+
+
+        #=======================
+        # 分析用
+        #=======================
+        ckpt = torch.load(file_path, map_location='cpu')
+        state_dict = ckpt['model']
+        trainer.model_temp.load_state_dict(state_dict)
+
+        trainer.embedding(vanila_loaders["train"], vanila_loaders["replay"])
 
 
 if __name__ == "__main__":

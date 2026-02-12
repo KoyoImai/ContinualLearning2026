@@ -206,3 +206,56 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
     return train_loader, _subset_indices
 
 
+def set_vanila_loader_cifar10(cfg, normalize, replay_indices):
+
+    # 値の定義
+    size = cfg.dataset.size
+    target_task = cfg.continual.target_task
+    cls_per_task = cfg.continual.cls_per_task
+    batch_size = cfg.train.batch_size
+    num_workers = cfg.num_workers
+
+    # データ拡張の定義
+    train_transform = transforms.Compose([
+        transforms.Resize(size=(size, size)),
+        transforms.ToTensor(),
+        normalize,
+    ])
+
+    # 現在タスクまでの全クラス
+    target_classes = list(range(0, (target_task+1)*cls_per_task))
+    print(target_classes)
+
+    # 現在タスクのクラスのみを対象にインデックスを取り出す
+    subset_indices = []
+    _train_dataset = datasets.CIFAR10(root=cfg.dataset.folder,
+                                      transform=train_transform,
+                                      download=True)
+
+    for tc in target_classes:
+        target_class_indices = np.where(np.array(_train_dataset.targets) == tc)[0]
+        subset_indices += np.where(np.array(_train_dataset.targets) == tc)[0].tolist()
+
+
+    # 現在タスクのサンプルのインデックスとリプレイバッファ内のサンプルのインデックスを合算しデータセットを作成
+    # subset_indices += replay_indices
+    train_dataset =  Subset(_train_dataset, subset_indices)
+    replay_dataset = Subset(_train_dataset, replay_indices)
+
+    # 訓練用データセット内の内訳を表示
+    uk, uc = np.unique(np.array(_train_dataset.targets)[subset_indices], return_counts=True)  
+    print('uc[np.argsort(uk)]', uc[np.argsort(uk)])
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=500, shuffle=False,
+        num_workers=num_workers, pin_memory=True
+    )
+
+    replay_laoder = torch.utils.data.DataLoader(
+        replay_dataset, batch_size=500, shuffle=False,
+        num_workers=num_workers, pin_memory=True
+    )
+
+    vanila_loaders = {"train": train_loader, "replay": replay_laoder}
+
+    return vanila_loaders

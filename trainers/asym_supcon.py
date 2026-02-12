@@ -56,9 +56,8 @@ def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
 
 class AsymSupConTrainer(BaseLearner):
 
-    def __init__(self, cfg, model, model2, criterion, optimizer):
-
-        super().__init__(cfg, model, model2, criterion, optimizer)
+    def __init__(self, cfg, model, model2, model_temp, criterion, optimizer, writer):
+        super().__init__(cfg, model, model2, model_temp, criterion, optimizer, writer)
 
         # 蒸留タイプの決定
         self.distill_type = self.cfg.criterion.distill.type

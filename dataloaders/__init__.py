@@ -3,12 +3,18 @@
 from torchvision import transforms, datasets
 
 
-from dataloaders.dataloader_cifar10 import set_loader_cifar10
+from dataloaders.dataloader_cifar10 import set_loader_cifar10, set_vanila_loader_cifar10
 
 from dataloaders.linear_cifar10 import set_loader_cifar10_linear_train, set_loader_cifar10_linear_val
 
 
 def set_loader(cfg, model, replay_indices):
+
+    """
+    return
+        train_loader   : 訓練に使用するデータローダー
+        vanila_loaders : 訓練後に特徴埋め込みを獲得するためのデータローダー
+    """
 
     # 正規化パラメータの設定
     if cfg.dataset.name == "cifar10":
@@ -31,12 +37,13 @@ def set_loader(cfg, model, replay_indices):
     # データローダーの作成
     if cfg.dataset.name == "cifar10":
         train_loader, subset_indices = set_loader_cifar10(cfg, normalize, replay_indices)
+        vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
 
     else:
         assert False
 
 
-    return train_loader, subset_indices
+    return train_loader, vanila_loaders, subset_indices
 
 
 def set_loader_linear(cfg, model, replay_indices):

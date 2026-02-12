@@ -57,8 +57,8 @@ def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
 
 class SupConTrainer(BaseLearner):
 
-    def __init__(self, cfg, model, model2, criterion, optimizer):
-        super().__init__(cfg, model, model2, criterion, optimizer)
+    def __init__(self, cfg, model, model2, model_temp, criterion, optimizer, writer):
+        super().__init__(cfg, model, model2, model_temp, criterion, optimizer, writer)
 
         # 蒸留タイプの決定
         self.distill_type = self.cfg.criterion.distill.type
@@ -140,7 +140,16 @@ class SupConTrainer(BaseLearner):
                     'distill {distill.val:.3f} ({distill.avg:.3f})\t'
                     'lr {lr:.5f}'.format(
                     epoch, idx + 1, len(self.train_loader), loss=losses, distill=distill, lr=current_lr))
-        
+
+            # ===== TensorBoard logging =====
+            if self.writer is not None:
+                t = self.cfg.continual.target_task
+                step = self.global_step
+                self.writer.add_scalar(f"train/task{t}/loss", loss.item(), step)
+                self.writer.add_scalar(f"train/task{t}/distill", loss_distill.item(), step)
+                self.writer.add_scalar(f"train/task{t}/lr", current_lr, step)
+                self.global_step += 1
+
     
     def distill(self, features, images):
 
@@ -181,6 +190,75 @@ class SupConTrainer(BaseLearner):
 
 
         return loss_distill
+
+    @torch.no_grad()
+    def _collect_features(self, model, loader, device, split_name):
+
+        feats = []
+        encs  = []
+        metas = []
+        imgs  = []
+
+        model.eval()
+
+        for batch in loader:
+            
+            images, labels = batch
+            
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+
+            # 特徴を抽出
+            features, encoded = model(images, return_feat=True)
+
+            feats.append(features.detach().cpu())
+            encs.append(encoded.detach().cpu())
+            imgs.append(images.detach().cpu())
+            metas.extend([[int(y), split_name] for y in labels.detach().cpu().tolist()])
+
+        mat1 = torch.cat(feats, dim=0)[:]            # (N, D_feat)
+        mat2 = torch.cat(encs, dim=0)[:]             # (N, D_enc)
+        label_img = torch.cat(imgs, dim=0)[:]       # (N, C, H, W)
+        metadata = metas[:]                         # len N, each is [class, split]
+        
+        return mat1, mat2, metadata, label_img
+
+    def embedding(self, train_loader, replay_loader):
+        
+        model = self.model_temp
+        device = next(self.model_temp.parameters()).device
+
+        mat1_tr, mat2_tr, meta_tr, img_tr = self._collect_features(model, train_loader, device, "train")
+        if self.cfg.continual.target_task != 0:
+            mat1_rp, mat2_rp, meta_rp, img_rp = self._collect_features(model, replay_loader, device, "replay")
+
+            mat1 = torch.cat([mat1_tr, mat1_rp], dim=0)
+            mat2 = torch.cat([mat2_tr, mat2_rp], dim=0)
+            metadata = meta_tr + meta_rp
+            label_img = torch.cat([img_tr, img_rp], dim=0)
+        else:
+            mat1, mat2, metadata, label_img = mat1_tr, mat2_tr, meta_tr, img_tr 
+
+        t = int(self.cfg.continual.target_task)
+        step = t  # もしくは epoch など（要検討）
+        
+        self.writer.add_embedding(
+            mat=mat1,
+            metadata=metadata,
+            metadata_header=["class", "split"],
+            label_img=label_img,
+            tag=f"features/task{t:02d}/encoder_train_vs_replay",
+            global_step=step,
+        )
+        self.writer.add_embedding(
+            mat=mat2,
+            metadata=metadata,
+            metadata_header=["class", "split"],
+            label_img=label_img,
+            tag=f"encodeds/task{t:02d}/encoder_train_vs_replay",
+            global_step=step,
+        )
+        self.writer.flush()
 
 
     def set_scheduler(self):

@@ -5,14 +5,18 @@ import math
 
 
 class BaseLearner(object):
-    def __init__(self, cfg, model, model2, criterion, optimizer):
+    def __init__(self, cfg, model, model2, model_temp, criterion, optimizer, writer):
 
         # 初期値
         self.cfg = cfg
         self.model = model
         self.model2 = model2
+        self.model_temp = model_temp
         self.criterion = criterion
         self.optimizer = optimizer
+        
+        self.writer = writer
+        self.global_step = 0
 
     def train(self):
         pass

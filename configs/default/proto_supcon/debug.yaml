@@ -68,6 +68,7 @@ log:
   mem_path: 
   model_path: 
   subset_path: 
+  tb_path: 
 
 # configファイルの保存先（main.py のlog_baseと同じにしないといけないので注意）
 hydra:
