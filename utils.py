@@ -120,5 +120,15 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
+# #=====================
+# # ディレクトリの作成
+# #=====================
+# def make_dir(cfg):
+
+#     if cfg.log.
+
+#     assert False
+
+
 
 

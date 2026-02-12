@@ -41,15 +41,16 @@ def main(cfg):
     #=======================
     seed_setup(cfg.seed)
 
-
     #=======================
     # log の名前を設定（未実装）
     #=======================
+    # log_name = None
+    # # loggerの設定
+    # # setup_logging(cfg=cfg)
+    # # logging.info("Experiment started")
 
-    # loggerの設定
-    # setup_logging(cfg=cfg)
-    # logging.info("Experiment started")
-
+    # # 実験記録を保存するディレクトリを作成
+    # make_dir(cfg)
 
     #=======================
     # model の作成

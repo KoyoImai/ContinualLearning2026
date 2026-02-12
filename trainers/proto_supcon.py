@@ -191,7 +191,7 @@ class ProtoSupConTrainer(BaseLearner):
                 # ==================================
                 # 現在モデルで過去クラスに対応したプロトタイプの出力を計算
                 sim_prev_task = torch.matmul(prototypes_mask, output)              # output から 過去クラスに対応した出力のみ取り出す
-                features1_sim = torch.div(sim_prev_task, cfg.criterion.distill.current_temp)         # 温度パラメータで除算
+                features1_sim = torch.div(sim_prev_task, self.cfg.criterion.distill.current_temp)         # 温度パラメータで除算
 
                 # 数値安定化
                 logits_max1, _ = torch.max(features1_sim, dim=0, keepdim=True)
@@ -210,7 +210,7 @@ class ProtoSupConTrainer(BaseLearner):
                 with torch.no_grad():
                     # 過去モデルで過去クラスに対応したプロトタイプの出力を計算
                     _, _, sim2_prev_task = self.model2(images)
-                    sim2_prev_task = sim2_prev_task.T
+                    # sim2_prev_task = sim2_prev_task.T
                     sim2_prev_task = torch.matmul(prototypes_mask, sim2_prev_task)
                     features2_sim = torch.div(sim2_prev_task, self.cfg.criterion.distill.past_temp)
 
@@ -264,3 +264,108 @@ class ProtoSupConTrainer(BaseLearner):
 
 
 
+    def linear_eval(self, train_loader, val_loader):
+
+        # classifierの準備
+        classifier = LinearClassifier(name="resnet18", num_classes=self.cfg.continual.n_cls, seed=self.cfg.seed)
+        if torch.cuda.is_available():
+            classifier = classifier.cuda()
+        
+        # classifierのOptimizer
+        optimizer = optim.SGD(classifier.parameters(),
+                            lr=self.cfg.linear.train.learning_rate,
+                            momentum=self.cfg.linear.train.momentum,
+                            weight_decay=self.cfg.linear.train.weight_decay)
+
+        # schedulerの設定
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 75, 90], gamma=0.2)
+
+        # 損失関数の作成
+        criterion = torch.nn.CrossEntropyLoss()
+
+        for epoch in range(1, self.cfg.linear.train.epochs):
+
+            # modelをevalモード，classifierをtrainモードに変更
+            self.model.eval()
+            classifier.train()
+            
+            losses = AverageMeter()
+
+            # 1エポック分の学習
+            for idx, (images, labels) in enumerate(train_loader):
+
+                images = images.cuda(non_blocking=True)
+                labels = labels.cuda(non_blocking=True)
+                bsz = labels.shape[0]
+
+                # 特徴量獲得
+                with torch.no_grad():
+                    features = self.model.encoder(images)
+                output = classifier(features.detach())
+                loss = criterion(output, labels)
+
+                # update metric
+                losses.update(loss.item(), bsz)
+                # cnt += bsz
+
+                # 最適化ステップ
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # 現在の学習率
+                current_lr = optimizer.param_groups[0]['lr']
+
+                # 学習記録の表示
+                if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(train_loader):
+                    print('Train: [{0}][{1}/{2}]\t'
+                        'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
+                        epoch, idx + 1, len(train_loader), loss=losses))
+                
+
+            # 検証（これまでの全てのタスクを使用）
+            self.model.eval()
+            classifier.eval()
+
+            losses = AverageMeter()
+
+            corr = [0.] * (self.cfg.linear.target_task + 1) * self.cfg.continual.cls_per_task
+            cnt  = [0.] * (self.cfg.linear.target_task + 1) * self.cfg.continual.cls_per_task
+            correct_task = 0.0
+
+            with torch.no_grad():
+                for idx, (images, labels) in enumerate(val_loader):
+                    images = images.float().cuda()
+                    labels = labels.cuda()
+                    bsz = labels.shape[0]
+
+                    # forward
+                    output = classifier(self.model.encoder(images))
+                    loss = criterion(output, labels)
+
+                    # update metric
+                    losses.update(loss.item(), bsz)
+
+                    #
+                    cls_list = np.unique(labels.cpu())
+                    correct_all = (output.argmax(1) == labels)
+
+                    for tc in cls_list:
+                        mask = labels == tc
+                        correct_task += (output[mask, (tc // self.cfg.continual.cls_per_task) * self.cfg.continual.cls_per_task : ((tc // self.cfg.continual.cls_per_task)+1) * self.cfg.continual.cls_per_task].argmax(1) == (tc % self.cfg.continual.cls_per_task)).float().sum()
+
+                    for c in cls_list:
+                        mask = labels == c
+                        corr[c] += correct_all[mask].float().sum().item()
+                        cnt[c] += mask.float().sum().item()
+                    
+                    if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(val_loader):
+                        print('Test: [{0}/{1}]\t'
+                            'Acc@1 {top1:.3f} {task_il:.3f}\t'
+                            'lr {lr:.5f}'.format(
+                                idx, len(val_loader),top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100., lr=current_lr
+                            ))
+            print(' * Acc@1 {top1:.3f} {task_il:.3f}'.format(top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100.))
+
+            # 学習率の調整
+            scheduler.step()
