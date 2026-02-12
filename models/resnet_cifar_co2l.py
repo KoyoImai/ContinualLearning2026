@@ -196,7 +196,53 @@ class SupConResNet(nn.Module):
             return feat, encoded
         else:
             return feat
+
+
+# 教師あり対照学習用（w/ プロトタイプ）
+class ProtoSupConResNet(nn.Module):
+    """backbone + projection head + Prototypes"""
+    def __init__(self, name='resnet50', head='mlp', feat_dim=128, cfg=None):
+        super(ProtoSupConResNet, self).__init__()
+        model_fun, dim_in = model_dict[name]
+        self.encoder = model_fun()
         
+        # Projector or FC層 を作成
+        if head == 'mlp':
+            self.head = nn.Sequential(
+                nn.Linear(dim_in, dim_in),
+                nn.ReLU(inplace=True),
+                nn.Linear(dim_in, feat_dim)
+            )
+        else:
+            raise NotImplementedError(
+                'head not supported: {}'.format(head))
+
+        # Prototypes を作成
+        self.prototypes = nn.Linear(feat_dim, cfg.continual.n_cls, bias=False)
+
+
+    def reinit_head(self):
+        for layers in self.head.children():
+            if hasattr(layers, 'reset_parameters'):
+                layers.reset_parameters()
+    
+    def forward(self, x, norm=True):
+        
+        encoded = self.encoder(x)
+        
+        if norm:
+            feat = F.normalize(self.head(encoded), dim=1)
+        else:
+            feat = self.head(encoded)
+        
+        if self.prototypes is not None:
+            return encoded, feat, self.prototypes(feat).T   #
+            # return encoded, feat, self.prototypes(feat)       # DPを使用する場合，転置はエラーになるので外す 
+
+        else:
+            return feat
+
+
         
 # 教師あり交差エントロピー損失用
 class SupCEResNet(nn.Module):

@@ -29,8 +29,8 @@ def main(cfg):
     model = make_model(cfg=cfg)
 
     # パラメータの読み込み
-    # ckpt_path = f"{cfg.log.model_path}/model_{cfg.linear.target_task:02d}.pth"
-    ckpt_path = f"{cfg.log.model_path}/model_init.pth"
+    ckpt_path = f"{cfg.log.model_path}/model_{cfg.linear.target_task:02d}.pth"
+    # ckpt_path = f"{cfg.log.model_path}/model_init.pth"
     ckpt = torch.load(ckpt_path, map_location='cpu')
     state_dict = ckpt['model']
     model.load_state_dict(state_dict)

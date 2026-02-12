@@ -44,60 +44,60 @@ def save_model(model, optimizer, cfg, epoch, save_file):
     del state
 
 
-#=====================
-# Schedulerの処理
-#=====================
-def adjust_learning_rate(cfg, optimizer, epoch):
+# #=====================
+# # Schedulerの処理
+# #=====================
+# def adjust_learning_rate(cfg, optimizer, epoch):
 
-    learning_rate = cfg.optimizer.learning_rate
-    learning_rate_prototypes = cfg.optimizer.learning_rate_prototypes
-    cosine = cfg.optimizer.scheduler.cosine
-    lr_decay_rate = cfg.optimizer.scheduler.lr_decay_rate
+#     learning_rate = cfg.optimizer.learning_rate
+#     learning_rate_prototypes = cfg.optimizer.learning_rate_prototypes
+#     cosine = cfg.optimizer.scheduler.cosine
+#     lr_decay_rate = cfg.optimizer.scheduler.lr_decay_rate
 
-    lr_enc = learning_rate
-    lr_prot = learning_rate_prototypes
+#     lr_enc = learning_rate
+#     lr_prot = learning_rate_prototypes
     
-    if cosine:
-        eta_min_enc = lr_enc * (lr_decay_rate ** 3)
-        eta_min_prot = lr_prot * (lr_decay_rate ** 3)
-        lr_enc = eta_min_enc + (lr_enc - eta_min_enc) * (
-                1 + math.cos(math.pi * epoch / cfg.train.epochs)) / 2
-        lr_prot = eta_min_prot + (lr_prot - eta_min_prot) * (
-                1 + math.cos(math.pi * epoch / cfg.train.epochs)) / 2        
-    else:
-        steps = np.sum(epoch > np.asarray(cfg.optimizer.scheduler.lr_decay_epochs))
-        if steps > 0:
-            lr_enc = lr_enc * (lr_decay_rate ** steps)
-            lr_prot = lr_prot * (lr_decay_rate ** steps)
+#     if cosine:
+#         eta_min_enc = lr_enc * (lr_decay_rate ** 3)
+#         eta_min_prot = lr_prot * (lr_decay_rate ** 3)
+#         lr_enc = eta_min_enc + (lr_enc - eta_min_enc) * (
+#                 1 + math.cos(math.pi * epoch / cfg.train.epochs)) / 2
+#         lr_prot = eta_min_prot + (lr_prot - eta_min_prot) * (
+#                 1 + math.cos(math.pi * epoch / cfg.train.epochs)) / 2        
+#     else:
+#         steps = np.sum(epoch > np.asarray(cfg.optimizer.scheduler.lr_decay_epochs))
+#         if steps > 0:
+#             lr_enc = lr_enc * (lr_decay_rate ** steps)
+#             lr_prot = lr_prot * (lr_decay_rate ** steps)
 
-    lr_list = [lr_enc, lr_enc, lr_prot]
+#     lr_list = [lr_enc, lr_enc, lr_prot]
 
-    for idx, param_group in enumerate(optimizer.param_groups):
-        # print('idx: ', idx)
-        param_group['lr'] = lr_list[idx]
+#     for idx, param_group in enumerate(optimizer.param_groups):
+#         # print('idx: ', idx)
+#         param_group['lr'] = lr_list[idx]
 
 
-def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
+# def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
     
-    warm = cfg.optimizer.scheduler.warm
-    warm_epochs = cfg.optimizer.scheduler.warm_epochs
-    warmup_from_enc = cfg.optimizer.scheduler.warmup_from_enc
-    warmup_from_prot = cfg.optimizer.scheduler.warmup_from_prot
-    warmup_to_enc = cfg.optimizer.scheduler.warmup_to_enc
-    warmup_to_prot = cfg.optimizer.scheduler.warmup_to_prot
+#     warm = cfg.optimizer.scheduler.warm
+#     warm_epochs = cfg.optimizer.scheduler.warm_epochs
+#     warmup_from_enc = cfg.optimizer.scheduler.warmup_from_enc
+#     warmup_from_prot = cfg.optimizer.scheduler.warmup_from_prot
+#     warmup_to_enc = cfg.optimizer.scheduler.warmup_to_enc
+#     warmup_to_prot = cfg.optimizer.scheduler.warmup_to_prot
 
-    if warm and epoch <= warm_epochs:
-        p = (batch_id + (epoch - 1) * total_batches) / \
-            (warm_epochs * total_batches)
-        lr_enc = warmup_from_enc + p * (warmup_to_enc - warmup_from_enc)
-        lr_prot = warmup_from_prot + p * (warmup_to_prot - warmup_from_prot)
-        lr_list = [lr_enc, lr_enc, lr_prot]
+#     if warm and epoch <= warm_epochs:
+#         p = (batch_id + (epoch - 1) * total_batches) / \
+#             (warm_epochs * total_batches)
+#         lr_enc = warmup_from_enc + p * (warmup_to_enc - warmup_from_enc)
+#         lr_prot = warmup_from_prot + p * (warmup_to_prot - warmup_from_prot)
+#         lr_list = [lr_enc, lr_enc, lr_prot]
 
-        for idx, param_group in enumerate(optimizer.param_groups):
-            # print("lr_list[idx]: ", lr_list[idx])
+#         for idx, param_group in enumerate(optimizer.param_groups):
+#             # print("lr_list[idx]: ", lr_list[idx])
 
-            # print('idx: ', idx)
-            param_group['lr'] = lr_list[idx]
+#             # print('idx: ', idx)
+#             param_group['lr'] = lr_list[idx]
 
 #=====================
 # 学習記録

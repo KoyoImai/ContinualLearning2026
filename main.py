@@ -105,7 +105,7 @@ def main(cfg):
 
         # バッファ内データのインデックスを保存（検証や分析時に読み込むため）
         np.save(
-          os.path.join("./debug/", 'replay_indices_{target_task}.npy'.format(target_task=target_task)),
+          os.path.join(cfg.log.mem_path, 'replay_indices_{target_task}.npy'.format(target_task=target_task)),
           np.array(replay_indices))
 
         #=======================
@@ -114,7 +114,7 @@ def main(cfg):
         dataloader, subset_indices = set_loader(cfg, model, replay_indices)
 
         # subset_indices（このタスクで学習に使用する全てのデータのインデックス）を保存
-        np.save(os.path.join(cfg.log.mem_path, 'subset_indices_{target_task}.npy'.format(target_task=target_task)), np.array(subset_indices))
+        np.save(os.path.join(cfg.log.subset_path, 'subset_indices_{target_task}.npy'.format(target_task=target_task)), np.array(subset_indices))
 
         #=======================
         # 訓練開始前のその他の準備

@@ -7,17 +7,17 @@ model:
   syncbn: True
 
 criterion:
-  name: "asym_supcon"
+  name: "proto_supcon"
   temp: 0.5
   distill:
-    type: "ird"
+    type: "prd"
     current_temp: 0.2
-    past_temp: 0.01
-    power: 1.0
+    past_temp: 0.1
+    power: 0.6
 
 optimizer:
   name: "sgd"
-  learning_rate: 0.5
+  learning_rate: 1.0
   learning_rate_prototypes: 0.01
   momentum: 0.9
   weight_decay: 1e-4
@@ -57,14 +57,15 @@ linear:
   train:
     batch_size: 256
     epochs: 100
-    learning_rate: 1.0
+    learning_rate: 0.5
     momentum: 0.9
     weight_decay: 0 
 
 log:
-  explog_path: "debug/asym_supcon/explog/"
-  mem_path: "debug/asym_supcon/mem/"
-  model_path: "debug/asym_supcon/model/"
+  explog_path: "debug/proto_supcon/explog/"
+  mem_path: "debug/proto_supcon/mem/"
+  model_path: "debug/proto_supcon/model/"
+  subset_path: "debug/proto_supcon/subset/"
 
 
 seed: 77

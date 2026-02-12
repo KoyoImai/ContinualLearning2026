@@ -16,7 +16,8 @@ def make_criterion(cfg):
         from criterions.asym_supcon import AsymSupConLoss
         criterion = AsymSupConLoss(temperature=cfg.criterion.temp)
     elif name == "proto_supcon":
-        assert False
+        from criterions.proto_supcon import ProtoSupConLoss
+        criterion = ProtoSupConLoss(temperature=cfg.criterion.temp, cfg=cfg)
     else:
         assert False
 

@@ -184,13 +184,13 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
 
     if training:
         train_loader = torch.utils.data.DataLoader(
-                            train_dataset, batch_size=batch_size, shuffle=(train_sampler is None), drop_last=True,
+                            train_dataset, batch_size=batch_size, shuffle=(train_sampler is None),
                             num_workers=num_workers, pin_memory=True, sampler=train_sampler)
 
 
     else:
         train_loader = torch.utils.data.DataLoader(
-                            train_dataset, batch_size=batch_size, shuffle=False, drop_last=True,
+                            train_dataset, batch_size=batch_size, shuffle=False,
                             num_workers=num_workers, pin_memory=True)
         print('no separate sampler')
 

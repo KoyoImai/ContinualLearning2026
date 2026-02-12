@@ -21,12 +21,22 @@ def make_model(cfg):
         from models.resnet_cifar import SupConResNet
 
         if backbone in ["resnet20", "resnet32", "resnet44", "resnet56"]:
-            from models.resnet_cifar import SupConResNet
+            # from models.resnet_cifar import SupConResNet
+            assert False
         
         elif backbone in ["resnet18", "resnet50"]:
-            from models.resnet_cifar_co2l import SupConResNet
 
-        model = SupConResNet(name=backbone, head=head, feat_dim=feat_dim, cfg=cfg)
+            if cfg.criterion.name in ["supcon", "asym_supcon"]:
+                from models.resnet_cifar_co2l import SupConResNet
+                model = SupConResNet(name=backbone, head=head, feat_dim=feat_dim, cfg=cfg)
+            elif cfg.criterion.name in ["proto_supcon"]:
+                from models.resnet_cifar_co2l import ProtoSupConResNet
+                model = ProtoSupConResNet(name=backbone, head=head, feat_dim=feat_dim, cfg=cfg)
+            else:
+                assert False
+        else:
+            assert False
+        
 
     elif dataset in ["imagenet100"]:
         assert False
