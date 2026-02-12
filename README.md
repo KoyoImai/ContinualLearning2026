@@ -19,7 +19,7 @@ SSOCL/
 ```
 
 # 実行方法
-## 学習
+## デバッグ（訓練）
 指定したデータセットで学習を行います．
 学習の設定は`configs`ディレクトリの下に`.yaml`ファイルを追加，修正することで変更できます．
 `.yaml`ファイルを追加して学習する場合は，実行時の`--config-path`と`--config-name`を修正してから実行してください．
@@ -32,3 +32,17 @@ SSOCL/
     ```
     python main.py --config-path ./configs/default/proto_supcon --config-name debug
     ```
+
+## デバッグ（線形分類による評価）
+タスクを指定し評価を行います．
+評価の設定は，学習に使用した`.yaml`ファイルの`linear`から設定できます．
+- debug supcon:
+    ```
+    python main_linear.py --config-path ./configs/default/supcon --config-name debug
+    ```
+
+- debug proto_supcon:
+    ```
+    python main_linear.py --config-path ./configs/default/proto_supcon --config-name debug
+    ```
+
