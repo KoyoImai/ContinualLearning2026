@@ -25,10 +25,10 @@ def setup_logging(cfg):
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),                   # コンソール出力
-            logging.FileHandler(f"{cfg.log.explog_path}/experiment.log", mode="w")  # ファイルに記録（上書きモード）
-        ]
+        # handlers=[
+        #     logging.StreamHandler(),                   # コンソール出力
+        #     logging.FileHandler(f"{cfg.hydra.run.dir}/experiment.log", mode="w")  # ファイルに記録（上書きモード）
+        # ]
     )
 
 
@@ -54,8 +54,8 @@ def main(cfg):
     cfg.log.base = log_base
 
     # loggerの設定
-    # setup_logging(cfg=cfg)
-    # logging.info("Experiment started")
+    setup_logging(cfg=cfg)
+    logging.info("Experiment started")
 
     # 実験記録を保存するディレクトリを作成
     make_dir(cfg)

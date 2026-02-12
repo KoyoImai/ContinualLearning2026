@@ -64,11 +64,15 @@ linear:
 log:
   name: "debug"
   base: 
-  explog_path: "debug/proto_supcon/explog/"
-  mem_path: "debug/proto_supcon/mem/"
-  model_path: "debug/proto_supcon/model/"
-  subset_path: "debug/proto_supcon/subset/"
+  explog_path: 
+  mem_path: 
+  model_path: 
+  subset_path: 
 
+# configファイルの保存先（main.py のlog_baseと同じにしないといけないので注意）
+hydra:
+  run:
+    dir: "logs/${log.name}_${seed}_${date}/${dataset.name}/${continual.n_task}_${continual.cls_per_task}/${model.backbone}_${model.head}_${criterion.name}_${criterion.distill.type}${criterion.distill.power}_${optimizer.name}_${buffer.type}${buffer.size}"
 
 seed: 77
 date: "2026_0212"

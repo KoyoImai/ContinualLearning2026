@@ -7,7 +7,7 @@ model:
   syncbn: True
 
 criterion:
-  name: "asym_supcon"
+  name: "supcon"
   temp: 0.5
   distill:
     type: "ird"
@@ -62,11 +62,19 @@ linear:
     weight_decay: 0 
 
 log:
-  explog_path: "debug/asym_supcon/explog/"
-  mem_path: "debug/asym_supcon/mem/"
-  model_path: "debug/asym_supcon/model/"
+  name: "debug"
+  base: 
+  explog_path: 
+  mem_path: 
+  model_path: 
+  subset_path: 
 
+# configファイルの保存先（main.py のlog_baseと同じにしないといけないので注意）
+hydra:
+  run:
+    dir: "logs/${log.name}_${seed}_${date}/${dataset.name}/${continual.n_task}_${continual.cls_per_task}/${model.backbone}_${model.head}_${criterion.name}_${criterion.distill.type}${criterion.distill.power}_${optimizer.name}_${buffer.type}${buffer.size}"
 
 seed: 77
+date: "2026_0212"
 print_freq: 10
 num_workers: 8
