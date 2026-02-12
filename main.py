@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 
-from utils import seed_setup, save_model
+from utils import seed_setup, save_model, make_dir
 from models import make_model           # mode の作成
 from criterions import make_criterion   # criterion の作成
 from optimizers import make_optimizer   # optimizer の作成
@@ -44,13 +44,21 @@ def main(cfg):
     #=======================
     # log の名前を設定（未実装）
     #=======================
-    # log_name = None
-    # # loggerの設定
-    # # setup_logging(cfg=cfg)
-    # # logging.info("Experiment started")
+    log_base = (f"logs/{cfg.log.name}_{cfg.seed}_{cfg.date}/"                                           # logの名前（分析やデバッグなど，目的に沿って名前をconfigファイルで指定）
+                f"{cfg.dataset.name}/"                                                                  # データセット名 で ディレクトリ分岐
+                f"{cfg.continual.n_task}_{cfg.continual.cls_per_task}/"                                 # タスク設定 で ディレクトリ分岐
+                f"{cfg.model.backbone}_{cfg.model.head}_"                                               # モデルやOptimizerなど で ディレクトリ分岐
+                f"{cfg.criterion.name}_{cfg.criterion.distill.type}{cfg.criterion.distill.power}_"
+                f"{cfg.optimizer.name}_"
+                f"{cfg.buffer.type}{cfg.buffer.size}")
+    cfg.log.base = log_base
 
-    # # 実験記録を保存するディレクトリを作成
-    # make_dir(cfg)
+    # loggerの設定
+    # setup_logging(cfg=cfg)
+    # logging.info("Experiment started")
+
+    # 実験記録を保存するディレクトリを作成
+    make_dir(cfg)
 
     #=======================
     # model の作成

@@ -62,6 +62,8 @@ linear:
     weight_decay: 0 
 
 log:
+  name: "debug"
+  base: 
   explog_path: "debug/proto_supcon/explog/"
   mem_path: "debug/proto_supcon/mem/"
   model_path: "debug/proto_supcon/model/"
@@ -69,5 +71,6 @@ log:
 
 
 seed: 77
+date: "2026_0212"
 print_freq: 10
 num_workers: 8

@@ -1,5 +1,5 @@
 
-
+import os
 import math
 import random
 import torch
@@ -120,14 +120,35 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-# #=====================
-# # ディレクトリの作成
-# #=====================
-# def make_dir(cfg):
+#=====================
+# ディレクトリの作成
+#=====================
+def make_dir(cfg):
 
-#     if cfg.log.
+    # ベースディレクトリの作成
+    if not os.path.isdir(cfg.log.base):
+        os.makedirs(cfg.log.base)
 
-#     assert False
+    # 実験記録を保存するディレクトリの作成
+    cfg.log.explog_path = f"{cfg.log.base}/explog/"
+    if not os.path.isdir(cfg.log.explog_path):
+        os.makedirs(cfg.log.explog_path)
+    
+    # バッファ内サンプルのインデックスを保存するディレクトリを作成
+    cfg.log.mem_path = f"{cfg.log.base}/mem/"
+    if not os.path.isdir(cfg.log.mem_path):
+        os.makedirs(cfg.log.mem_path)    
+    
+    # モデルを保存するディレクトリを作成
+    cfg.log.model_path = f"{cfg.log.base}/model/"
+    if not os.path.isdir(cfg.log.model_path):
+        os.makedirs(cfg.log.model_path)
+    
+    # 学習データのインデックスを保存するディレクトリを作成
+    cfg.log.subset_path = f"{cfg.log.base}/subset/"
+    if not os.path.isdir(cfg.log.subset_path):
+        os.makedirs(cfg.log.subset_path)
+    
 
 
 
