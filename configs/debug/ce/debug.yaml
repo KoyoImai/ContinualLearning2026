@@ -35,7 +35,7 @@ optimizer:
 train:
   epochs: 50
   start_epochs: 50
-  batch_size: 128
+  batch_size: 64
 
 continual:
   n_cls: 10

@@ -3,7 +3,10 @@
 import math
 import logging
 import numpy as np
+
+
 import torch
+import torch.nn.functional as F
 
 
 from trainers.base import BaseLearner
@@ -80,6 +83,7 @@ class CETrainer(BaseLearner):
 
             # 画像とラベルを取得
             images, labels = data
+            # print("labels: ", labels)
 
             # バッチサイズ
             bsz = labels.shape[0]
@@ -153,6 +157,9 @@ class CETrainer(BaseLearner):
         elif self.distill_type == "kd_logits":
             if self.cfg.continual.target_task > 0:
 
+                # 温度パラメータ
+                T = self.cfg.criterion.distill.temp
+
                 # old classes の数
                 old_classes = self.cfg.continual.target_task * self.cfg.continual.cls_per_task
 
@@ -163,6 +170,13 @@ class CETrainer(BaseLearner):
                 # 生徒・教師の logits の形状を合わせる
                 student_old = logits[:, :old_classes]
                 teacher_old = teacher_logits[:, :old_classes]
+
+                # KL( teacher || student ) を計算
+                log_p = F.log_softmax(student_old / T, dim=1)
+                q = F.softmax(teacher_old / T, dim=1)
+
+                loss_distill = F.kl_div(log_p, q, reduction="batchmean") * (T * T)
+
 
         else:
             assert False
