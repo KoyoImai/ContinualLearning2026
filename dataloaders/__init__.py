@@ -2,13 +2,17 @@
 
 from torchvision import transforms, datasets
 
-
+# 通常のデータローダーの作成
 from dataloaders.dataloader_cifar10 import set_loader_cifar10, set_vanila_loader_cifar10
 
+# cclis用データローダーの作成
+from dataloaders.dataloader_cclis_cifar10 import set_loader_cclis_cifar10
+
+# 線形分類による評価用データローダーの作成
 from dataloaders.linear_cifar10 import set_loader_cifar10_linear_train, set_loader_cifar10_linear_val
 
 
-def set_loader(cfg, model, replay_indices):
+def set_loader(cfg, trainer, replay_indices):
 
     """
     return
@@ -36,9 +40,12 @@ def set_loader(cfg, model, replay_indices):
 
     # データローダーの作成
     if cfg.dataset.name == "cifar10":
-        train_loader, subset_indices = set_loader_cifar10(cfg, normalize, replay_indices)
-        vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
-
+        if cfg.criterion.name == "is_supcon":
+            train_loader, subset_indices = set_loader_cclis_cifar10(cfg, normalize, trainer, replay_indices)
+            vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
+        else:
+            train_loader, subset_indices = set_loader_cifar10(cfg, normalize, replay_indices)
+            vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
     else:
         assert False
 

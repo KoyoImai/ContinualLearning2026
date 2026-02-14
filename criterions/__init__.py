@@ -18,6 +18,9 @@ def make_criterion(cfg):
     elif name == "proto_supcon":
         from criterions.proto_supcon import ProtoSupConLoss
         criterion = ProtoSupConLoss(temperature=cfg.criterion.temp, cfg=cfg)
+    elif name == "is_supcon":
+        from criterions.cclis import ISSupConLoss
+        criterion = ISSupConLoss(temperature=cfg.criterion.temp, cfg=cfg)
     else:
         assert False
 

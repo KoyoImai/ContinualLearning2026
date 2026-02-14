@@ -126,7 +126,7 @@ def main(cfg):
         #=======================
         # データローダの作成
         #=======================
-        dataloader, vanila_loaders, subset_indices = set_loader(cfg, model, replay_indices)
+        dataloader, vanila_loaders, subset_indices = set_loader(cfg, trainer, replay_indices)
 
         # subset_indices（このタスクで学習に使用する全てのデータのインデックス）を保存
         np.save(os.path.join(cfg.log.subset_path, 'subset_indices_{target_task}.npy'.format(target_task=target_task)), np.array(subset_indices))

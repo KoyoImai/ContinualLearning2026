@@ -27,7 +27,7 @@ A2：
 学習・評価に使用するプログラムの全体像は以下の通りです．
 各ディレクトリの詳細については，それぞれのディレクトリのREADMEを確認してください．
 ```
-SSOCL/
+ContinualLearning2026/
 ├── buffer              : 色々なバッファを実装
 ├── configs             : 学習・評価の設定を記述する.yamlファイルを格納したディレクトリ
 ├── criterions          : 色々な損失関数を実装
@@ -60,6 +60,11 @@ SSOCL/
     ```
     python main.py --config-path ./configs/default/proto_supcon --config-name debug
     ```
+- debug cclis:
+    ```
+    python main.py --config-path ./configs/default/cclis --config-name debug
+    ```
+
 
 ## デバッグ（線形分類による評価）
 タスクを指定し評価を行います．
