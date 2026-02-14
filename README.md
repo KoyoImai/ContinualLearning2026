@@ -49,13 +49,6 @@ ContinualLearning2026/
     ```
     python main.py --config-path ./configs/default/supcon --config-name debug
     ```
-    TensorBoardの可視化は以下で実行可能です．
-    ```
-    tensorboard --logdir /home/kouyou/ContinualLearning2026/logs/debug_77_2026_0212/cifar10/5_2/resnet18_mlp_supcon_ird1.0_sgd_random500/tb --port 6006 --host localhost
-    ```
-    ```
-    tensorboard --logdir /home/kouyou/ContinualLearning2026/logs --port 6006 --host localhost
-    ```
 - debug proto_supcon:
     ```
     python main.py --config-path ./configs/default/proto_supcon --config-name debug
@@ -63,6 +56,16 @@ ContinualLearning2026/
 - debug cclis:
     ```
     python main.py --config-path ./configs/default/cclis --config-name debug
+    ```
+- TensorBoaed による可視化
+
+    特定の実験記録のみを見たい場合は，`--logdir`を特定の実験のディレクトリのみ指定して実行してください．
+    ```
+    tensorboard --logdir /home/kouyou/ContinualLearning2026/logs/debug_77_2026_0212/cifar10/5_2/resnet18_mlp_supcon_ird1.0_sgd_random500/tb --port 6006 --host localhost
+    ```
+    他の実験との比較を行いたい場合は，`--logdir`に`./logs`などを指定して実行してください．
+    ```
+    tensorboard --logdir /home/kouyou/ContinualLearning2026/logs --port 6006 --host localhost
     ```
 
 

@@ -1,5 +1,6 @@
 import os
 import math
+import logging
 import numpy as np
 
 import torch
@@ -168,11 +169,17 @@ class CCLISTrainer(BaseLearner):
 
             # 学習記録の表示
             if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(self.train_loader):
-                print('Train: [{0}][{1}/{2}]\t'
+                # print('Train: [{0}][{1}/{2}]\t'
+                #     'loss {loss.val:.3f} ({loss.avg:.3f})\t'
+                #     'distill {distill.val:.3f} ({distill.avg:.3f})\t'
+                #     'lr {lr:.5f}'.format(
+                #     epoch, idx + 1, len(self.train_loader), loss=losses, distill=distill, lr=current_lr))
+                logging.info('Train: [{0}][{1}/{2}]\t'
                     'loss {loss.val:.3f} ({loss.avg:.3f})\t'
                     'distill {distill.val:.3f} ({distill.avg:.3f})\t'
                     'lr {lr:.5f}'.format(
-                    epoch, idx + 1, len(self.train_loader), loss=losses, distill=distill, lr=current_lr))
+                    epoch, idx + 1, len(self.train_loader), loss=losses, distill=distill, lr=current_lr)
+                )
         
             # ===== TensorBoard logging =====
             if self.writer is not None:
@@ -183,7 +190,7 @@ class CCLISTrainer(BaseLearner):
                 self.writer.add_scalar(f"train/task{t}/lr", current_lr, step)
                 self.global_step += 1
                 self.writer.flush()
-                
+
     
     def distill(self, features, images, labels, output, target_labels):
 
