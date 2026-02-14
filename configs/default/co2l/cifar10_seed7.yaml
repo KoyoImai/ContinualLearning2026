@@ -1,0 +1,80 @@
+
+model:
+  backbone: "resnet18"
+  head: "mlp"
+  feat_dim: 128
+  syncbn: True
+
+criterion:
+  name: "asym_supcon"
+  temp: 0.5
+  distill:
+    type: "ird"
+    current_temp: 0.2
+    past_temp: 0.01
+    power: 1.0
+
+optimizer:
+  name: "sgd"
+  learning_rate: 0.5
+  learning_rate_prototypes: 0.01
+  momentum: 0.9
+  weight_decay: 1e-4
+  scheduler:
+    cosine: True
+    lr_decay_rate: 0.1
+    warm: True
+    warm_epochs: 10
+    warmup_from_enc: 0.01
+    warmup_to_enc: 
+    warmup_from_prot: 0.001
+    warmup_to_prot: 
+
+train:
+  epochs: 100
+  start_epochs: 500
+  batch_size: 512
+
+continual:
+  n_cls: 10
+  n_task: 5
+  cls_per_task: 2
+  target_task: 
+
+buffer:
+  type: "random"
+  size: 500
+
+
+dataset:
+  name: "cifar10"
+  size: 32
+  folder: "/home/kouyou/datasets/"
+
+linear:
+  target_task: 4
+  train:
+    batch_size: 256
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0 
+
+log:
+  name: "default"
+  base: 
+  explog_path: 
+  mem_path: 
+  model_path: 
+  subset_path: 
+  tb_path: 
+
+# configファイルの保存先（main.py のlog_baseと同じにしないといけないので注意）
+hydra:
+  run:
+    dir: "logs/${log.name}_${seed}_${date}/${dataset.name}/${continual.n_task}_${continual.cls_per_task}/${model.backbone}_${model.head}_${criterion.name}_${criterion.distill.type}${criterion.distill.power}_${optimizer.name}_${buffer.type}${buffer.size}"
+
+seed: 7
+date: "2026_0214"
+print_freq: 10
+num_workers: 8
