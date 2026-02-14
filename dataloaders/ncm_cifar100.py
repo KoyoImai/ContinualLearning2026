@@ -6,7 +6,7 @@ from torch.utils.data import Subset
 from torch.utils.data import WeightedRandomSampler
 
 
-def set_loader_cifar10_ncm_train(cfg, normalize, replay_indices):
+def set_loader_cifar100_ncm_train(cfg, normalize, replay_indices):
 
     # 値の定義
     size = cfg.dataset.size
@@ -22,9 +22,9 @@ def set_loader_cifar10_ncm_train(cfg, normalize, replay_indices):
     ])
 
     subset_indices = []
-    _train_dataset = datasets.CIFAR10(root=cfg.dataset.folder,
-                                      transform=train_transform,
-                                      download=True)
+    _train_dataset = datasets.CIFAR100(root=cfg.dataset.folder,
+                                       transform=train_transform,
+                                       download=True)
     
     _train_targets = np.array(_train_dataset.targets)
     for tc in range(target_task*cls_per_task, (target_task+1)*cls_per_task):
@@ -53,7 +53,7 @@ def set_loader_cifar10_ncm_train(cfg, normalize, replay_indices):
 
 
 
-def set_loader_cifar10_ncm_val(cfg, normalize):
+def set_loader_cifar100_ncm_val(cfg, normalize):
 
     # 値の定義
     size = cfg.dataset.size
@@ -71,9 +71,9 @@ def set_loader_cifar10_ncm_val(cfg, normalize):
     target_classes = list(range(0, (target_task+1)*cls_per_task))
 
     subset_indices = []
-    _val_dataset = datasets.CIFAR10(root=cfg.dataset.folder,
-                                    train=False,
-                                    transform=val_transform)
+    _val_dataset = datasets.CIFAR100(root=cfg.dataset.folder,
+                                     train=False,
+                                     transform=val_transform)
     for tc in target_classes:
         subset_indices += np.where(np.array(_val_dataset.targets) == tc)[0].tolist()
     val_dataset =  Subset(_val_dataset, subset_indices)

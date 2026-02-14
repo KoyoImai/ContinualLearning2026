@@ -12,6 +12,7 @@ from dataloaders.dataloader_cclis_cifar100 import set_loader_cclis_cifar100
 
 # 線形分類による評価用データローダーの作成
 from dataloaders.linear_cifar10 import set_loader_cifar10_linear_train, set_loader_cifar10_linear_val
+from dataloaders.linear_cifar100 import set_loader_cifar100_linear_train, set_loader_cifar100_linear_val
 
 # NCM分類による評価用データローダーの作成
 from dataloaders.ncm_cifar10 import set_loader_cifar10_ncm_train, set_loader_cifar10_ncm_val
@@ -96,17 +97,18 @@ def set_loader_linear(cfg, model, replay_indices):
     normalize = transforms.Normalize(mean=mean, std=std)
 
     if cfg.dataset.name == "cifar10":
-
         train_loader = set_loader_cifar10_linear_train(cfg, normalize, replay_indices)
         val_loader = set_loader_cifar10_linear_val(cfg, normalize)
+
+    elif cfg.dataset.name == "cifar100":
+        train_loader = set_loader_cifar100_linear_train(cfg, normalize, replay_indices)
+        val_loader = set_loader_cifar100_linear_val(cfg, normalize)
 
     else:
         assert False
 
     
     return train_loader, val_loader
-
-
 
 
 def set_loader_ncm(cfg, model, replay_indices):
@@ -129,9 +131,11 @@ def set_loader_ncm(cfg, model, replay_indices):
     normalize = transforms.Normalize(mean=mean, std=std)
 
     if cfg.dataset.name == "cifar10":
-
         train_loader = set_loader_cifar10_ncm_train(cfg, normalize, replay_indices)
         val_loader = set_loader_cifar10_ncm_val(cfg, normalize)
+    if cfg.dataset.name == "cifar100":
+        train_loader = set_loader_cifar100_ncm_train(cfg, normalize, replay_indices)
+        val_loader = set_loader_cifar100_ncm_val(cfg, normalize)
 
     else:
         assert False

@@ -57,7 +57,7 @@ linear:
   train:
     batch_size: 256
     epochs: 100
-    learning_rate: 1.0
+    learning_rate: 0.5
     momentum: 0.9
     weight_decay: 0 
 

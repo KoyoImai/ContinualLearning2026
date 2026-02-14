@@ -59,7 +59,11 @@ linear:
     epochs: 100
     learning_rate: 1.0
     momentum: 0.9
-    weight_decay: 0 
+    weight_decay: 0
+
+ncm:
+  target_task: 4
+  
 
 log:
   name: "debug"
