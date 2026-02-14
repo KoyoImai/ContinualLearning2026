@@ -27,8 +27,14 @@ class BaseLearner(object):
     def post_process(self):
         pass
     
+    # fc層の拡張
     def set_fc(self):
         pass
+    
+    # ncm 分類
+    def ncm_eval(self):
+        pass
 
+    # tensorboardで可視化するための特徴
     def embedding(self, train_loader, replay_loader):
         pass

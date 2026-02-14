@@ -39,6 +39,12 @@ def set_replay_samples_cclis(cfg, model, trainer, prev_indices):
                                        transform=val_transform,
                                        download=True)
         val_targets = np.array(val_dataset.targets)
+    elif cfg.dataset.name == "cifar100":
+        subset_indices = []
+        val_dataset = datasets.CIFAR100(root=cfg.dataset.folder,
+                                        transform=val_transform,
+                                        download=True)
+        val_targets = np.array(val_dataset.targets)
     else:
         assert False
 

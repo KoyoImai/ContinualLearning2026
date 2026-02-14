@@ -1,26 +1,29 @@
 
-import os
-import copy
-import torch
+
+
 import hydra
 import logging
 import numpy as np
 
+
+import torch
+
+
+
 from utils import seed_setup, save_model, make_dir
 from models import make_model                  # mode の作成
 from trainers import setup_trainer             # trainer の作成
-from dataloaders import set_loader_linear      # dataloader の作成
+from dataloaders import set_loader_ncm          # dataloader の作成
 
 
 def setup_logging(cfg):
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        # handlers=[
-        #     logging.StreamHandler(),                   # コンソール出力
-        #     logging.FileHandler(f"{cfg.hydra.run.dir}/experiment.log", mode="w")  # ファイルに記録（上書きモード）
-        # ]
     )
+
+
+
 
 
 @hydra.main(config_path='configs/default/', config_name='default', version_base=None)
@@ -30,7 +33,6 @@ def main(cfg):
     # seed 値の固定
     #=======================
     seed_setup(cfg.seed)
-
 
     #=======================
     # log の名前を設定（未実装）
@@ -74,7 +76,7 @@ def main(cfg):
         replay_indices = np.load(file_path)
 
     # データローダーの作成（バッファ内のデータも含めて）
-    train_loader, val_loader = set_loader_linear(cfg, model, replay_indices)
+    train_loader, val_loader = set_loader_ncm(cfg, model, replay_indices)
 
     #=======================
     # trainer の作成
@@ -82,11 +84,12 @@ def main(cfg):
     # trainer = setup_trainer(cfg, model, model2, criterion, optimizer)
     trainer = setup_trainer(cfg, model, None, None, None, None, None, None)
 
-    trainer.linear_eval(train_loader, val_loader)
+    trainer.ncm_eval(train_loader, val_loader)
 
 
 
 if __name__ == "__main__":
     main()
+
 
 

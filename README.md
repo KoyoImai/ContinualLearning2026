@@ -70,7 +70,7 @@ ContinualLearning2026/
 
 
 ## デバッグ（線形分類による評価）
-タスクを指定し評価を行います．
+タスクを指定し，指定したタスクのサンプルとリプレイバッファ内のサンプルで分類層を学習・評価を行います．
 評価の設定は，学習に使用した`.yaml`ファイルの`linear`から設定できます．
 - debug supcon:
     ```
@@ -81,6 +81,9 @@ ContinualLearning2026/
     ```
     python main_linear.py --config-path ./configs/debug/proto_supcon --config-name debug
     ```
+
+## デバッグ（NCM分類による評価）
+タスクを指定し，指定したタスクの[NCM分類](https://arxiv.org/pdf/1611.07725)による評価を行います．
 
 ## デバッグ（分析）
 tensorboardを起動することで多少の分析はできますが，それ以外を見たい場合は以下を実行してください．

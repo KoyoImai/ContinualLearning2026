@@ -163,7 +163,6 @@ def main(cfg):
 
         # 保存（opt.model_path）
         file_path = f"{cfg.log.model_path}/model_{cfg.continual.target_task:02d}.pth"
-        # save_model(model, method_tools["optimizer"], opt, opt.epochs, file_path)
         save_model(trainer.model, trainer.optimizer, cfg, cfg.train.epochs, file_path)
 
 

@@ -3,6 +3,7 @@
 import math
 import logging
 import numpy as np
+from collections import defaultdict
 
 import torch
 import torch.optim as optim
@@ -404,6 +405,24 @@ class SupConTrainer(BaseLearner):
             # 学習率の調整
             scheduler.step()
 
+
+
+    def ncm_eval(self, train_loader, val_loaer):
+
+        # model を eval モードに変更
+        self.model.eval()
+
+        # 現在データとリプレイバッファ内のデータから特徴を抽出
+        train_features = defaultdict(list)
+        train_encoded = defaultdict(list)
+
+        with torch.no_grad():
+            for idx, (images, labels) in enumerate(train_loader):
+
+                if torch.cuda.is_available():
+                    images = images.cuda(non_blocking=True)
+                    labels = labels.cuda(non_blocking=True)
+                
 
 
 

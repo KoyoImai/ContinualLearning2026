@@ -1,6 +1,3 @@
-
-
-
 import numpy as np
 
 import torch
@@ -18,7 +15,6 @@ class TwoCropTransform:
     def __call__(self, x):
         return [self.transform(x), self.transform(x)]
     
-
 
 #=============================
 # Samplerの作成
@@ -89,12 +85,14 @@ class BatchSchedulerSampler(torch.utils.data.sampler.Sampler):
 
 
         return iter(final_samples_list)
+    
+
 
 
 #=============================
-# CIFAR10 データローダー
+# CIFAR100 データローダー
 #=============================
-def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
+def set_loader_cifar100(cfg, normalize, replay_indices, training=True):
 
 
     # 値の定義
@@ -125,9 +123,9 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
 
     # 現在タスクのクラスのみを対象にインデックスを取り出す
     subset_indices = []
-    _train_dataset = datasets.CIFAR10(root=cfg.dataset.folder,
-                                      transform=TwoCropTransform(train_transform),
-                                      download=True)
+    _train_dataset = datasets.CIFAR100(root=cfg.dataset.folder,
+                                       transform=TwoCropTransform(train_transform),
+                                       download=True)
 
     for tc in target_classes:
         target_class_indices = np.where(np.array(_train_dataset.targets) == tc)[0]
@@ -199,7 +197,7 @@ def set_loader_cifar10(cfg, normalize, replay_indices, training=True):
     return train_loader, _subset_indices
 
 
-def set_vanila_loader_cifar10(cfg, normalize, replay_indices):
+def set_vanila_loader_cifar100(cfg, normalize, replay_indices):
 
     # 値の定義
     size = cfg.dataset.size
@@ -221,9 +219,9 @@ def set_vanila_loader_cifar10(cfg, normalize, replay_indices):
 
     # 現在タスクのクラスのみを対象にインデックスを取り出す
     subset_indices = []
-    _train_dataset = datasets.CIFAR10(root=cfg.dataset.folder,
-                                      transform=train_transform,
-                                      download=True)
+    _train_dataset = datasets.CIFAR100(root=cfg.dataset.folder,
+                                       transform=train_transform,
+                                       download=True)
 
     for tc in target_classes:
         target_class_indices = np.where(np.array(_train_dataset.targets) == tc)[0]
@@ -252,3 +250,4 @@ def set_vanila_loader_cifar10(cfg, normalize, replay_indices):
     vanila_loaders = {"train": train_loader, "replay": replay_laoder}
 
     return vanila_loaders
+
