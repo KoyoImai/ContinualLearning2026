@@ -7,7 +7,7 @@ model:
   syncbn: True
 
 criterion:
-  name: "supcon"
+  name: "asym_supcon"
   temp: 0.5
   distill:
     type: "ird"

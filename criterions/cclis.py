@@ -213,15 +213,13 @@ class ISSupConLoss(nn.Module):
 
 
         
-        ## self.wo_isがTrueなら重要度スコアによる補正をなくし，単純なプロトタイプベースの対照学習を実行
-        if not self.wo_is:
-            # (s_{i,j} - log())
-            _logits = logits - torch.log(_importance_weight) * all_mask
-            # print("_logits.shape: ", _logits.shape)    # _logits.shape:  torch.Size([2, 512])
-            log_prob = logits - torch.log(torch.exp(_logits).sum(1, keepdim=True))  # normalize
-            # print("log_prob.shape: ", log_prob.shape)  # log_prob.shape:  torch.Size([2, 512])
-        else:
-            log_prob = logits - torch.log(torch.exp(logits).sum(1, keepdim=True))
+
+        # (s_{i,j} - log())
+        _logits = logits - torch.log(_importance_weight) * all_mask
+        # print("_logits.shape: ", _logits.shape)    # _logits.shape:  torch.Size([2, 512])
+        log_prob = logits - torch.log(torch.exp(_logits).sum(1, keepdim=True))  # normalize
+        # print("log_prob.shape: ", log_prob.shape)  # log_prob.shape:  torch.Size([2, 512])
+
 
         if reduction == "mean":
             IS_supcon_loss = - (log_prob * mask).sum() / mask.sum()

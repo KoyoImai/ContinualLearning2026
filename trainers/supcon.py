@@ -57,8 +57,8 @@ def warmup_learning_rate(cfg, epoch, batch_id, total_batches, optimizer):
 
 class SupConTrainer(BaseLearner):
 
-    def __init__(self, cfg, model, model2, model_temp, criterion, optimizer, writer):
-        super().__init__(cfg, model, model2, model_temp, criterion, optimizer, writer)
+    def __init__(self, cfg, model, model2, model_temp, criterion, optimizer, replay_indices, writer):
+        super().__init__(cfg, model, model2, model_temp, criterion, optimizer, replay_indices, writer)
 
         # 蒸留タイプの決定
         self.distill_type = self.cfg.criterion.distill.type
@@ -149,6 +149,7 @@ class SupConTrainer(BaseLearner):
                 self.writer.add_scalar(f"train/task{t}/distill", loss_distill.item(), step)
                 self.writer.add_scalar(f"train/task{t}/lr", current_lr, step)
                 self.global_step += 1
+                self.writer.flush()
 
     
     def distill(self, features, images):

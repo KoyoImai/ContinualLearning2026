@@ -9,6 +9,7 @@ model:
 criterion:
   name: "is_supcon"
   temp: 0.5
+  max_iter: 5
   distill:
     type: "prd"
     current_temp: 0.2
@@ -32,8 +33,8 @@ optimizer:
     warmup_to_prot: 
 
 train:
-  epochs: 10
-  start_epochs: 15
+  epochs: 5
+  start_epochs: 5
   batch_size: 512
 
 continual:
@@ -43,7 +44,7 @@ continual:
   target_task: 
 
 buffer:
-  type: "random"
+  type: "cclis"
   size: 500
 
 

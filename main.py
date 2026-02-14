@@ -96,7 +96,7 @@ def main(cfg):
     #=======================
     # trainerの作成
     #=======================
-    trainer = setup_trainer(cfg, model, model2, model_temp, criterion, optimizer, writer)
+    trainer = setup_trainer(cfg, model, model2, model_temp, criterion, optimizer, replay_indices, writer)
 
 
     # タスク毎の学習エポック数
@@ -116,7 +116,8 @@ def main(cfg):
         #=======================
         # リプレイサンプルの選択
         #=======================
-        replay_indices = set_buffer(cfg, model, prev_indices=replay_indices)
+        replay_indices = set_buffer(cfg, model, trainer, prev_indices=replay_indices)
+        trainer.replay_indices = replay_indices
 
         # バッファ内データのインデックスを保存（検証や分析時に読み込むため）
         np.save(
@@ -161,6 +162,12 @@ def main(cfg):
         file_path = f"{cfg.log.model_path}/model_{cfg.continual.target_task:02d}.pth"
         # save_model(model, method_tools["optimizer"], opt, opt.epochs, file_path)
         save_model(trainer.model, trainer.optimizer, cfg, cfg.train.epochs, file_path)
+
+
+        #=======================
+        # タスク終了後の処理
+        #=======================
+        trainer.post_process()
 
 
         #=======================

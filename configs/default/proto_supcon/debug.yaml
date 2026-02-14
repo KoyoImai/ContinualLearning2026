@@ -32,8 +32,8 @@ optimizer:
     warmup_to_prot: 
 
 train:
-  epochs: 100
-  start_epochs: 500
+  epochs: 5
+  start_epochs: 5
   batch_size: 512
 
 continual:

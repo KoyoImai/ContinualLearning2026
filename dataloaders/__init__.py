@@ -41,8 +41,12 @@ def set_loader(cfg, trainer, replay_indices):
     # データローダーの作成
     if cfg.dataset.name == "cifar10":
         if cfg.criterion.name == "is_supcon":
-            train_loader, subset_indices = set_loader_cclis_cifar10(cfg, normalize, trainer, replay_indices)
+            train_loader, subset_indices, subset_sample_num = set_loader_cclis_cifar10(cfg, normalize, trainer, replay_indices)
+            post_loader, _, _ = set_loader_cclis_cifar10(cfg, normalize, trainer, replay_indices, training=False)
             vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
+
+            trainer.subset_sample_num = subset_sample_num
+            trainer.post_loader = post_loader
         else:
             train_loader, subset_indices = set_loader_cifar10(cfg, normalize, replay_indices)
             vanila_loaders = set_vanila_loader_cifar10(cfg, normalize, replay_indices)
