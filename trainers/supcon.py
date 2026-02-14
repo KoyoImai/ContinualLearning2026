@@ -68,6 +68,7 @@ class SupConTrainer(BaseLearner):
 
         # model を train モードに変更
         self.model.train()
+        self.model2.eval()
 
         # Averagemeter の初期化
         losses = AverageMeter()

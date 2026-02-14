@@ -8,7 +8,7 @@ def make_criterion(cfg):
     name = cfg.criterion.name
 
     if name == "ce":
-        assert False
+        criterion = torch.nn.CrossEntropyLoss()
     elif name == "supcon":
         from criterions.supcon import SupConLoss
         criterion = SupConLoss(temperature=cfg.criterion.temp)

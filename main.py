@@ -149,6 +149,9 @@ def main(cfg):
         # scheduler 用の設定
         trainer.set_scheduler()
 
+        # fc 層の拡張（必要なら）
+        trainer.set_fc()
+
         
         #=======================
         # 訓練開始

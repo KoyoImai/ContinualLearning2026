@@ -32,6 +32,9 @@ def make_model(cfg):
             elif cfg.criterion.name in ["proto_supcon", "is_supcon"]:
                 from models.resnet_cifar_co2l import ProtoSupConResNet
                 model = ProtoSupConResNet(name=backbone, head=head, feat_dim=feat_dim, cfg=cfg)
+            elif cfg.criterion.name in ["ce"]:
+                from models.resnet_cifar_co2l import SupCEResNet
+                model = SupCEResNet(name=backbone)
             else:
                 assert False
         else:

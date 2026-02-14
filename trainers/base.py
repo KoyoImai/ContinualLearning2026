@@ -26,3 +26,9 @@ class BaseLearner(object):
     # 後処理
     def post_process(self):
         pass
+    
+    def set_fc(self):
+        pass
+
+    def embedding(self, train_loader, replay_loader):
+        pass

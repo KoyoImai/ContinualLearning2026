@@ -247,7 +247,7 @@ class ProtoSupConResNet(nn.Module):
 # 教師あり交差エントロピー損失用
 class SupCEResNet(nn.Module):
     """backbone + fc層"""
-    def __init__(self, name='resnet50', num_classes=0):
+    def __init__(self, name='resnet50', head=None, num_classes=0):
         
         super(SupCEResNet, self).__init__()
         model_fun, dim_in = model_dict[name]
@@ -261,14 +261,32 @@ class SupCEResNet(nn.Module):
 
         # fc層は逐次拡張する
         self.fc = self.generate_fc(self.feature_dim, self.out_features) if self.out_features > 0 else None
-    
+
+        # head の構築
+        if head == 'mlp':
+            self.head = nn.Sequential(
+                nn.Linear(dim_in, dim_in),
+                nn.ReLU(inplace=True),
+                nn.Linear(dim_in, self.feature_dim)
+            )
+        elif head is None:
+            self.head = None
+        else:
+            raise NotImplementedError(
+                'head not supported: {}'.format(head))
+
     def generate_fc(self, in_features, out_features):
         return nn.Linear(in_features, out_features, bias=True)
 
     def forward(self, x):
         encoded = self.encoder(x)
         output = self.fc(encoded)
-        return output, encoded
+
+        if self.head is not None:
+            feature = self.head(encoded)
+            return output, encoded, feature
+        else:
+            return output, encoded, None
 
     @torch.no_grad()
     def update_fc(self, nb_classes):
