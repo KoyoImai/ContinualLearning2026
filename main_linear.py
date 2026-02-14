@@ -82,7 +82,7 @@ def main(cfg):
     # trainer の作成
     #=======================
     # trainer = setup_trainer(cfg, model, model2, criterion, optimizer)
-    trainer = setup_trainer(cfg, model, None, None, None)
+    trainer = setup_trainer(cfg, model, None, None, None, None, None, None)
 
     trainer.linear_eval(train_loader, val_loader)
 

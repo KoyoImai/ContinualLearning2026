@@ -47,15 +47,15 @@ ContinualLearning2026/
 - debug supcon:
     supconの学習は以下で実行可能です．
     ```
-    python main.py --config-path ./configs/default/supcon --config-name debug
+    python main.py --config-path ./configs/debug/supcon --config-name debug
     ```
 - debug proto_supcon:
     ```
-    python main.py --config-path ./configs/default/proto_supcon --config-name debug
+    python main.py --config-path ./configs/debug/proto_supcon --config-name debug
     ```
 - debug cclis:
     ```
-    python main.py --config-path ./configs/default/cclis --config-name debug
+    python main.py --config-path ./configs/debug/cclis --config-name debug
     ```
 - TensorBoaed による可視化
 
@@ -74,12 +74,12 @@ ContinualLearning2026/
 評価の設定は，学習に使用した`.yaml`ファイルの`linear`から設定できます．
 - debug supcon:
     ```
-    python main_linear.py --config-path ./configs/default/supcon --config-name debug
+    python main_linear.py --config-path ./configs/debug/supcon --config-name debug
     ```
 
 - debug proto_supcon:
     ```
-    python main_linear.py --config-path ./configs/default/proto_supcon --config-name debug
+    python main_linear.py --config-path ./configs/debug/proto_supcon --config-name debug
     ```
 
 ## デバッグ（分析）

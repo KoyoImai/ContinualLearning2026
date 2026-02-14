@@ -336,9 +336,12 @@ class AsymSupConTrainer(BaseLearner):
 
                 # 学習記録の表示
                 if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(train_loader):
-                    print('Train: [{0}][{1}/{2}]\t'
-                        'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
-                        epoch, idx + 1, len(train_loader), loss=losses))
+                    # print('Train: [{0}][{1}/{2}]\t'
+                    #     'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
+                    #     epoch, idx + 1, len(train_loader), loss=losses))
+                    logging.info('Train: [{0}][{1}/{2}]\t'
+                                 'loss {loss.val:.3f} ({loss.avg:.3f})'.format(
+                                 epoch, idx + 1, len(train_loader), loss=losses))
                 
 
             # 検証（これまでの全てのタスクを使用）
@@ -378,12 +381,19 @@ class AsymSupConTrainer(BaseLearner):
                         cnt[c] += mask.float().sum().item()
                     
                     if (idx+1) % self.cfg.print_freq == 0 or idx+1 == len(val_loader):
-                        print('Test: [{0}/{1}]\t'
-                            'Acc@1 {top1:.3f} {task_il:.3f}\t'
-                            'lr {lr:.5f}'.format(
-                                idx, len(val_loader),top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100., lr=current_lr
-                            ))
-            print(' * Acc@1 {top1:.3f} {task_il:.3f}'.format(top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100.))
+                        # print('Test: [{0}/{1}]\t'
+                        #     'Acc@1 {top1:.3f} {task_il:.3f}\t'
+                        #     'lr {lr:.5f}'.format(
+                        #         idx, len(val_loader),top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100., lr=current_lr
+                        #     ))
+                        logging.info('Test: [{0}/{1}]\t'
+                                     'Acc@1 {top1:.3f} {task_il:.3f}\t'
+                                     'lr {lr:.5f}'.format(
+                                            idx, len(val_loader),top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100., lr=current_lr
+                        ))
+            # print(' * Acc@1 {top1:.3f} {task_il:.3f}'.format(top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100.))
+            logging.info(' * Acc@1 {top1:.3f} {task_il:.3f}'.format(top1=np.sum(corr)/np.sum(cnt)*100., task_il=correct_task/np.sum(cnt)*100.))
+
 
             # 学習率の調整
             scheduler.step()
