@@ -2,6 +2,7 @@
 
 from buffer.random import set_replay_samples_random
 from buffer.cclis import set_replay_samples_cclis
+from buffer.kmeans import set_replay_sample_kmeans
 
 
 def set_buffer(cfg, model, trainer, prev_indices=None):
@@ -15,6 +16,8 @@ def set_buffer(cfg, model, trainer, prev_indices=None):
         replay_indices, importance_weight, val_targets = set_replay_samples_cclis(cfg, model, trainer, prev_indices=prev_indices)
         trainer.importance_weight = importance_weight
         trainer.val_targets = val_targets
+    elif type == "kmeans":
+        replay_indices = set_replay_sample_kmeans(cfg, model, prev_indices=prev_indices)
     else:
         assert False
     

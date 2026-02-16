@@ -81,10 +81,10 @@ def set_replay_samples_random(cfg, model, prev_indices):
         # 前回タスクのクラス範囲
         observed_classes = list(range(max(target_task-1, 0)*cls_per_task, (target_task)*cls_per_task))
     
-    print("buffer_er.py observed_classes: ", observed_classes)
 
     # 確認済みのクラス（前回タスク）がない場合終了
     if len(observed_classes) == 0:
+        model.train()
         return prev_indices
      
     # 確認済みクラスのインデックスを獲得
