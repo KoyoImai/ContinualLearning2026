@@ -6,7 +6,7 @@ model:
   syncbn: True
 
 criterion:
-  name: "proto_supcon"
+  name: "is_supcon"
   temp: 0.5
   max_iter: 5
   distill:
@@ -43,8 +43,8 @@ continual:
   target_task: 
 
 buffer:
-  type: "random"
-  size: 500
+  type: "cclis"
+  size: 1500
 
 
 dataset:

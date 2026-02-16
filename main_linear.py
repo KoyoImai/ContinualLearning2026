@@ -61,7 +61,9 @@ def main(cfg):
     ckpt_path = f"{cfg.log.model_path}/model_{cfg.linear.target_task:02d}.pth"
     ckpt = torch.load(ckpt_path, map_location='cpu')
     state_dict = ckpt['model']
-    model.load_state_dict(state_dict)
+    missing, unexpected = model.load_state_dict(state_dict, strict=False)
+    print("missing:", missing)
+    print("unexpected:", unexpected)
 
     #=======================
     # データローダーの作成

@@ -6,18 +6,17 @@ model:
   syncbn: True
 
 criterion:
-  name: "proto_supcon"
+  name: "asym_supcon"
   temp: 0.5
-  max_iter: 5
   distill:
-    type: "prd"
+    type: "ird"
     current_temp: 0.2
-    past_temp: 0.1
-    power: 0.6
+    past_temp: 0.01
+    power: 1.0
 
 optimizer:
   name: "sgd"
-  learning_rate: 1.0
+  learning_rate: 0.5
   learning_rate_prototypes: 0.01
   momentum: 0.9
   weight_decay: 1e-4
@@ -37,18 +36,18 @@ train:
   batch_size: 512
 
 continual:
-  n_cls: 100
+  n_cls: 10
   n_task: 5
-  cls_per_task: 20
+  cls_per_task: 2
   target_task: 
 
 buffer:
   type: "random"
-  size: 500
+  size: 1500
 
 
 dataset:
-  name: "cifar100"
+  name: "cifar10"
   size: 32
   folder: "/home/kouyou/datasets/"
 
@@ -57,7 +56,7 @@ linear:
   train:
     batch_size: 256
     epochs: 100
-    learning_rate: 0.1
+    learning_rate: 1.0
     momentum: 0.9
     weight_decay: 0 
 

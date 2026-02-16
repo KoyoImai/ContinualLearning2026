@@ -2,6 +2,7 @@
 
 outputs/
 logs/
+bash/
 
 __pycache__/
 *.pyc

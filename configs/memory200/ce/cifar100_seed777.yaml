@@ -1,24 +1,24 @@
 
 model:
   backbone: "resnet18"
-  head: "mlp"
+  head: ""
   feat_dim: 128
   syncbn: True
 
 criterion:
-  name: "proto_supcon"
+  name: "ce"
   temp: 0.5
-  max_iter: 5
   distill:
-    type: "prd"
+    type: "l2_encoded"
+    temp: 2.0
     current_temp: 0.2
-    past_temp: 0.1
-    power: 0.6
+    past_temp: 0.01
+    power: 1.0
 
 optimizer:
   name: "sgd"
-  learning_rate: 1.0
-  learning_rate_prototypes: 0.01
+  learning_rate: 0.1
+  learning_rate_prototypes: 
   momentum: 0.9
   weight_decay: 1e-4
   scheduler:
@@ -28,13 +28,13 @@ optimizer:
     warm_epochs: 10
     warmup_from_enc: 0.01
     warmup_to_enc: 
-    warmup_from_prot: 0.001
+    warmup_from_prot: 
     warmup_to_prot: 
 
 train:
-  epochs: 100
-  start_epochs: 500
-  batch_size: 512
+  epochs: 50
+  start_epochs: 50
+  batch_size: 64
 
 continual:
   n_cls: 100
@@ -44,7 +44,7 @@ continual:
 
 buffer:
   type: "random"
-  size: 500
+  size: 200
 
 
 dataset:
@@ -57,7 +57,7 @@ linear:
   train:
     batch_size: 256
     epochs: 100
-    learning_rate: 0.1
+    learning_rate: 1.0
     momentum: 0.9
     weight_decay: 0 
 
@@ -75,7 +75,7 @@ hydra:
   run:
     dir: "logs/${log.name}_${seed}_${date}/${dataset.name}/${continual.n_task}_${continual.cls_per_task}/${model.backbone}_${model.head}_${criterion.name}_${criterion.distill.type}${criterion.distill.power}_${optimizer.name}_${buffer.type}${buffer.size}"
 
-seed: 7
+seed: 777
 date: "2026_0214"
 print_freq: 10
 num_workers: 8

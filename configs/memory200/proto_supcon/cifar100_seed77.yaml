@@ -44,7 +44,7 @@ continual:
 
 buffer:
   type: "random"
-  size: 500
+  size: 200
 
 
 dataset:
@@ -75,7 +75,7 @@ hydra:
   run:
     dir: "logs/${log.name}_${seed}_${date}/${dataset.name}/${continual.n_task}_${continual.cls_per_task}/${model.backbone}_${model.head}_${criterion.name}_${criterion.distill.type}${criterion.distill.power}_${optimizer.name}_${buffer.type}${buffer.size}"
 
-seed: 7
+seed: 77
 date: "2026_0214"
 print_freq: 10
 num_workers: 8
