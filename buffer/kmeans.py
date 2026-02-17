@@ -206,7 +206,7 @@ def set_replay_sample_kmeans(cfg, model, prev_indices):
                     continue
 
                 X = _extract_embeddings(cfg, model, val_dataset, cand, batch_size=256, use_norm=True)
-                pick_local = _kmeans_select_representatives(X, k=size_for_c, iters=20, seed=int(getattr(cfg, "seed", 777)) + int(c))
+                pick_local = _kmeans_select_representatives(X, k=size_for_c, iters=30, seed=cfg.seed + int(c))
                 prev_indices += [cand[i] for i in pick_local]
         
         # 前回タスクのクラス範囲
@@ -250,7 +250,7 @@ def set_replay_sample_kmeans(cfg, model, prev_indices):
             continue
             
         X = _extract_embeddings(cfg, model, val_dataset, cand, batch_size=256, use_norm=True)
-        pick_local = _kmeans_select_representatives(X, k=size_for_c, iters=20, seed=int(getattr(cfg, "seed", 777)) + 10_000 + int(c))
+        pick_local = _kmeans_select_representatives(X, k=size_for_c, iters=30, seed=cfg.seed + 10_000 + int(c))
         selected_observed_indices += [cand[i] for i in pick_local]
 
     if is_training:
